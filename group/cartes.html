@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BNP Paribas - Mes Cartes Bancaires</title>
+<link rel="shortcut icon" href="https://lh3.googleusercontent.com/48IHZd1EHIk-Dg1m6J36FZ6Pnlz0oLHVdqkzNdS8xJPCVdQk3EgZa014nPNzwi7o918
+
+" />
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Toastr CSS & JS / jQuery -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+  <!-- SDK Firebase v8 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+      tailwind.config = {
+          theme: {
+              extend: {
+                  colors: {
+                      caGreen: '#005d52',
+                      caDarkGreen: '#00473e',
+                      caLightBg: '#f4f6f8',
+                      caCardBg: '#ffffff',
+                      caSidebarBg: '#eef2f3',
+                      caActiveBg: '#d0e1df',
+                      caTextDark: '#1e293b',
+                      caTextMuted: '#64748b'
+                  },
+                  fontFamily: {
+                      sans: ['Inter', 'sans-serif'],
+                  }
+              }
+          }
+      }
+  </script>
+
+  <style>
+    .mobile-nav-bottom {
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    }
+    
+    /* Style de la carte aux couleurs BNP Paribas */
+    .bank-card {
+      background: linear-gradient(135deg, #005d52 0%, #00473e 50%, #022c22 100%);
+      aspect-ratio: 1.586 / 1;
+      border-radius: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0, 93, 82, 0.35);
+      transition: all 0.3s ease;
+    }
+    .chip {
+      width: 45px;
+      height: 34px;
+      background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+      border-radius: 6px;
+      position: relative;
+      border: 1px solid #fef08a;
+    }
+    .chip::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: rgba(0,0,0,0.2);
+    }
+    .chip::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      background: rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body class="bg-caLightBg text-caTextDark font-sans pb-20 md:pb-6 min-h-screen flex flex-col antialiased">
+
+  <!-- ================= OVERLAY (FOND SOMBRE MENU SLIDE) ================= -->
+  <div id="mobile-menu-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/50 z-50 hidden opacity-0 transition-opacity duration-300"></div>
+
+  <!-- ================= MENU LATÉRAL SLIDE (MOBILE DRAWER) ================= -->
+  <aside id="mobile-slide-menu" class="fixed top-0 left-0 w-72 h-full bg-caSidebarBg z-50 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-2xl flex flex-col justify-between">
+    <div>
+      <div class="bg-caGreen text-white p-5 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div id="slide-user-avatar" class="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-white border border-emerald-400">
+            --
+          </div>
+          <div>
+            <p id="slide-user-name" class="font-bold text-sm leading-tight">Chargement...</p>
+            <p class="text-[11px] text-emerald-200">Espace Privé</p>
+          </div>
+        </div>
+        <button onclick="toggleMobileMenu()" class="text-white hover:text-emerald-200 text-xl focus:outline-none p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <nav class="p-4 space-y-1 text-sm font-medium">
+        <a href="dashboard.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-house w-5 text-gray-500"></i>
+          <span>Tableau de bord</span>
+        </a>
+        <a href="comptes.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-wallet w-5 text-gray-500"></i>
+          <span>Comptes & Épargne</span>
+        </a>
+        <a href="historique.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-clock-rotate-left w-5 text-gray-500"></i>
+          <span>Historique des opérations</span>
+        </a>
+        <a href="virement.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-right-left w-5 text-gray-500"></i>
+          <span>Faire un virement</span>
+        </a>
+        <a href="ajouter-beneficiaire.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-user-plus w-5 text-gray-500"></i>
+          <span>Bénéficiaires</span>
+        </a>
+        <a href="cartes.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-caActiveBg text-caGreen font-semibold">
+          <i class="fa-solid fa-credit-card w-5"></i>
+          <span>Mes cartes bancaires</span>
+        </a>
+        <a href="rib.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-file-lines w-5 text-gray-500"></i>
+          <span>Mon RIB</span>
+        </a>
+
+        <div class="border-t border-gray-200 my-2 pt-2"></div>
+
+        <a href="profil.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-regular fa-user w-5 text-gray-500"></i>
+          <span>Mon profil</span>
+        </a>
+        <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition border-t border-gray-300 mt-2">
+          <i class="fa-solid fa-shield-halved w-5 text-emerald-700"></i>
+          <span class="font-bold text-emerald-900">Espace Admin</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-gray-200">
+      <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 px-4 rounded-xl text-sm transition">
+        <i class="fa-solid fa-power-off"></i>
+        <span>Déconnexion</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= EN-TÊTE / NAVBAR ================= -->
+  <header class="bg-caGreen text-white sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleMobileMenu()" class="md:hidden text-white text-xl p-1.5 rounded-lg hover:bg-emerald-800 focus:outline-none transition">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="flex items-center space-x-2 cursor-pointer" onclick="location.href='dashboard.html'">
+          <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+          </svg>
+          <div class="flex flex-col">
+            <span class="font-bold text-base tracking-wide leading-none"><img src="https://wp.logos-download.com/wp-content/uploads/2016/04/BNP_Paribas_logo_logotype_emblem.png?dl" height="135" width="175" alt="LCL Logo"></span>
+            <span class="text-[10px] text-emerald-100 font-medium tracking-wider"></span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex space-x-6 text-sm font-medium">
+        <a href="dashboard.html" class="hover:text-emerald-200 transition">Tableau de bord</a>
+        <a href="comptes.html" class="hover:text-emerald-200 transition">Comptes</a>
+        <a href="historique.html" class="hover:text-emerald-200 transition">Historique</a>
+        <a href="virement.html" class="hover:text-emerald-200 transition">Virements</a>
+        <a href="cartes.html" class="text-white underline decoration-2 underline-offset-4">Mes Cartes</a>
+        <a href="rib.html" class="hover:text-emerald-200 transition">Mon RIB</a>
+      </nav>
+
+      <div class="hidden md:flex items-center space-x-4 text-sm">
+        <a href="profil.html" class="flex items-center space-x-2 hover:text-emerald-200">
+          <i class="fa-regular fa-user text-lg"></i>
+          <span id="nav-user-name">Chargement...</span>
+        </a>
+        <button onclick="logout()" class="text-xs bg-emerald-800 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-md transition">
+          <i class="fa-solid fa-power-off mr-1"></i> Déconnexion
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= CONTENU PRINCIPAL ================= -->
+  <main class="max-w-5xl mx-auto px-4 py-6 space-y-6 flex-1">
+
+    <!-- En-tête de section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+      <div>
+        <h1 class="text-xl font-bold text-caTextDark flex items-center gap-2">
+          <i class="fa-solid fa-credit-card text-caGreen"></i> Mes Cartes Bancaires
+        </h1>
+        <p class="text-xs text-caTextMuted mt-1">Gérez vos options de paiement, vos plafonds et la sécurité de votre carte bancaire.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span id="card-status-badge" class="px-3 py-1 bg-emerald-100 text-caGreen rounded-full text-xs font-semibold flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Carte Active
+        </span>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- COLONNE GAUCHE : Visuel de la Carte Virtuelle & Actions Rapides -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- VISUEL DE LA CARTE FIDÈLE AUX COULEURS DU CRÉDIT AGRICOLE -->
+        <div class="bank-card p-6 text-white flex flex-col justify-between shadow-xl relative">
+          <!-- Logo & Marque -->
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-2">
+              <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+              </svg>
+              <div>
+                <p class="font-bold tracking-wider text-xs uppercase leading-none">BNP PARIBAS</p>
+                <p class="text-[9px] tracking-wider text-emerald-200 font-medium">MA BANQUE</p>
+              </div>
+            </div>
+            <span class="font-extrabold italic text-xl tracking-tighter text-white">VISA</span>
+          </div>
+
+          <!-- Puce électronique -->
+          <div class="my-2">
+            <div class="chip"></div>
+          </div>
+
+          <!-- Numéro de carte -->
+          <div class="space-y-1">
+            <div class="flex items-center justify-between">
+              <p id="card-number" class="font-mono text-lg md:text-xl font-bold tracking-widest drop-shadow">
+                4972 5800 1234 5678
+              </p>
+              <button onclick="toggleCardDetails()" class="text-xs bg-white/10 hover:bg-white/20 p-2 rounded-lg transition text-emerald-100" title="Afficher / Masquer">
+                <i id="eye-icon" class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Infos Bas de Carte (Titulaire, Date) -->
+          <div class="flex items-end justify-between pt-2">
+            <div>
+              <p class="text-[9px] uppercase tracking-wider text-emerald-200 font-semibold">TITULAIRE</p>
+              <p id="card-holder" class="font-bold text-xs md:text-sm tracking-wide uppercase">CLIENT</p>
+            </div>
+
+            <div>
+              <p class="text-[9px] uppercase tracking-wider text-emerald-200 font-semibold">VALIDE FIN</p>
+              <p id="card-expiry" class="font-bold text-xs md:text-sm tracking-wide font-mono">10/28</p>
+            </div>
+
+            <div class="flex items-center space-x-1">
+              <i class="fa-solid fa-wifi text-emerald-200 rotate-90 text-sm"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Boutons d'actions rapides sous la carte -->
+        <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm grid grid-cols-2 gap-3">
+          <button onclick="toggleBlockCard()" id="btn-block-card" class="flex flex-col items-center justify-center p-3 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold transition gap-1.5">
+            <i id="block-icon" class="fa-solid fa-lock text-base"></i>
+            <span id="block-text">Verrouiller Carte</span>
+          </button>
+
+          <button onclick="showCVVModal()" class="flex flex-col items-center justify-center p-3 rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 text-caTextDark text-xs font-bold transition gap-1.5">
+            <i class="fa-solid fa-shield-halved text-base text-caGreen"></i>
+            <span>Voir CVV / Code</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- COLONNE DROITE : Paramètres, Plafonds et Options -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- GESTION DES PLAFONDS -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+          <h2 class="text-sm font-bold text-caTextDark uppercase tracking-wider border-b border-gray-100 pb-3 flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-caGreen"></i> Plafonds de dépense
+          </h2>
+
+          <!-- Plafond de Paiement -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs font-semibold">
+              <span class="text-caTextMuted">Paiements par mois</span>
+              <span class="text-caGreen font-bold">1 250 € / 5 000 €</span>
+            </div>
+            <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+              <div class="bg-caGreen h-full rounded-full" style="width: 25%"></div>
+            </div>
+          </div>
+
+          <!-- Plafond de Retrait -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs font-semibold">
+              <span class="text-caTextMuted">Retraits par semaine</span>
+              <span class="text-caGreen font-bold">300 € / 1 000 €</span>
+            </div>
+            <div class="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
+              <div class="bg-amber-500 h-full rounded-full" style="width: 30%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPTIONS ET SÉCURITÉ (SWITCHS) -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+          <h2 class="text-sm font-bold text-caTextDark uppercase tracking-wider border-b border-gray-100 pb-3 flex items-center gap-2">
+            <i class="fa-solid fa-gears text-caGreen"></i> Options de sécurité
+          </h2>
+
+          <!-- Switch 1 : Paiements en ligne -->
+          <div class="flex items-center justify-between py-2 border-b border-gray-50">
+            <div>
+              <p class="text-xs font-bold text-caTextDark">Paiements sur Internet</p>
+              <p class="text-[11px] text-caTextMuted">Autoriser les achats en ligne avec cette carte</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer" onchange="showToast('Paramètre mis à jour')">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-caGreen"></div>
+            </label>
+          </div>
+
+          <!-- Switch 2 : Paiement Sans Contact -->
+          <div class="flex items-center justify-between py-2 border-b border-gray-50">
+            <div>
+              <p class="text-xs font-bold text-caTextDark">Paiement Sans Contact</p>
+              <p class="text-[11px] text-caTextMuted">Activer les paiements NFC en magasin</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer" onchange="showToast('Paramètre mis à jour')">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-caGreen"></div>
+            </label>
+          </div>
+
+          <!-- Switch 3 : Retraits au Distributeur -->
+          <div class="flex items-center justify-between py-2">
+            <div>
+              <p class="text-xs font-bold text-caTextDark">Retraits DAB</p>
+              <p class="text-[11px] text-caTextMuted">Autoriser les retraits dans les guichets automatiques</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer" onchange="showToast('Paramètre mis à jour')">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-caGreen"></div>
+            </label>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= BARRE DE NAVIGATION MOBILE (BOTTOM) ================= -->
+  <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 mobile-nav-bottom z-40 flex justify-around py-2 text-gray-500 text-[10px]">
+    <a href="dashboard.html" class="flex flex-col items-center hover:text-caGreen">
+      <i class="fa-solid fa-house text-lg mb-0.5"></i>
+      <span>Accueil</span>
+    </a>
+    <a href="comptes.html" class="flex flex-col items-center hover:text-caGreen">
+      <i class="fa-solid fa-wallet text-lg mb-0.5"></i>
+      <span>Comptes</span>
+    </a>
+    <a href="historique.html" class="flex flex-col items-center hover:text-caGreen">
+      <i class="fa-solid fa-clock-rotate-left text-lg mb-0.5"></i>
+      <span>Historique</span>
+    </a>
+    <a href="virement.html" class="flex flex-col items-center hover:text-caGreen">
+      <i class="fa-solid fa-right-left text-lg mb-0.5"></i>
+      <span>Virement</span>
+    </a>
+    <a href="cartes.html" class="flex flex-col items-center text-caGreen font-bold">
+      <i class="fa-solid fa-credit-card text-lg mb-0.5"></i>
+      <span>Cartes</span>
+    </a>
+  </nav>
+
+  <!-- ================= MODAL CVV ================= -->
+  <div id="cvv-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 text-center">
+      <div class="w-12 h-12 bg-emerald-100 text-caGreen rounded-full flex items-center justify-center mx-auto text-xl">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h3 class="text-base font-bold text-caTextDark">Cryptogramme Visuel (CVV)</h3>
+      <p class="text-xs text-caTextMuted">Ne communiquez jamais ce code à un tiers.</p>
+      
+      <div class="bg-gray-100 p-4 rounded-xl font-mono text-2xl font-bold tracking-widest text-caTextDark">
+        839
+      </div>
+
+      <button onclick="hideCVVModal()" class="w-full bg-caGreen hover:bg-caDarkGreen text-white font-bold py-2.5 rounded-xl text-xs transition">
+        Fermer
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= NOTIFICATION TOAST ================= -->
+  <div id="toast" class="fixed bottom-16 right-5 bg-caGreen text-white px-5 py-3 rounded-xl shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center space-x-3">
+      <i class="fa-solid fa-circle-check text-emerald-300 text-lg"></i>
+      <span id="toast-message" class="text-sm font-medium">Opération réussie</span>
+  </div>
+
+  <!-- ================= SCRIPTS FIREBASE V8 & LOGIQUE ================= -->
+  <script>
+    // Config Firebase (v8)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDMBGGXNwEHk4gCwzsofxVYIH0dJ6usyek",
+      authDomain: "alliance-67cb1.firebaseapp.com",
+      projectId: "alliance-67cb1",
+      storageBucket: "alliance-67cb1.firebasestorage.app",
+      messagingSenderId: "464968433664",
+      appId: "1:464968433664:web:0604cbdaf2b36e55e718e5"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    // Vérification de la session
+    const activeUserId = sessionStorage.getItem('activeUserId');
+    if (!activeUserId) {
+      window.location.href = "index.html";
+    }
+
+    let isCardLocked = false;
+    let isDetailsVisible = false;
+    let rawCardNumber = "4972 5800 1234 5678";
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-message').innerText = msg;
+        toast.classList.remove('translate-y-20', 'opacity-0');
+        setTimeout(() => {
+            toast.classList.add('translate-y-20', 'opacity-0');
+        }, 3500);
+    }
+
+    $(function() {
+      // Chargement des données Firestore
+      db.collection('users').doc(activeUserId).onSnapshot((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          const prenom = data.prenom || 'Client';
+          const nom = data.nom || '';
+          const fullName = `${prenom} ${nom}`.toUpperCase();
+
+          // Mise à jour de l'affichage
+          $('#slide-user-avatar').text(`${prenom[0] || 'C'}${nom[0] || ''}`.toUpperCase());
+          $('#slide-user-name, #nav-user-name').text(prenom);
+          $('#card-holder').text(fullName);
+
+          if (data.cardNumber) {
+            rawCardNumber = data.cardNumber;
+            updateCardNumberDisplay();
+          }
+        } else {
+          logout();
+        }
+      });
+    });
+
+    // Afficher / Masquer le numéro de carte
+    function toggleCardDetails() {
+      isDetailsVisible = !isDetailsVisible;
+      updateCardNumberDisplay();
+      
+      if (isDetailsVisible) {
+        $('#eye-icon').removeClass('fa-eye').addClass('fa-eye-slash');
+      } else {
+        $('#eye-icon').removeClass('fa-eye-slash').addClass('fa-eye');
+      }
+    }
+
+    function updateCardNumberDisplay() {
+      if (isDetailsVisible) {
+        $('#card-number').text(rawCardNumber);
+      } else {
+        const parts = rawCardNumber.split(' ');
+        if (parts.length === 4) {
+          $('#card-number').text(`•••• •••• •••• ${parts[3]}`);
+        } else {
+          $('#card-number').text(`•••• •••• •••• 5678`);
+        }
+      }
+    }
+
+    // Verrouiller / Déverrouiller la carte
+    function toggleBlockCard() {
+      isCardLocked = !isCardLocked;
+      if (isCardLocked) {
+        $('#card-status-badge').removeClass('bg-emerald-100 text-caGreen').addClass('bg-red-100 text-red-800')
+          .html('<span class="w-2 h-2 rounded-full bg-red-500"></span> Carte Verrouillée');
+        $('#block-text').text("Déverrouiller Carte");
+        $('#block-icon').removeClass('fa-lock').addClass('fa-lock-open');
+        $('.bank-card').addClass('opacity-50 grayscale');
+        showToast("Votre carte a été temporairement verrouillée.");
+      } else {
+        $('#card-status-badge').removeClass('bg-red-100 text-red-800').addClass('bg-emerald-100 text-caGreen')
+          .html('<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Carte Active');
+        $('#block-text').text("Verrouiller Carte");
+        $('#block-icon').removeClass('fa-lock-open').addClass('fa-lock');
+        $('.bank-card').removeClass('opacity-50 grayscale');
+        showToast("Votre carte est à nouveau active.");
+      }
+    }
+
+    // Gestion de la Modal CVV
+    function showCVVModal() {
+      $('#cvv-modal').removeClass('hidden');
+    }
+
+    function hideCVVModal() {
+      $('#cvv-modal').addClass('hidden');
+    }
+
+    // Navigation Mobile Slide
+    function toggleMobileMenu() {
+      const menu = $('#mobile-slide-menu');
+      const overlay = $('#mobile-menu-overlay');
+
+      if (menu.hasClass('-translate-x-full')) {
+        menu.removeClass('-translate-x-full').addClass('translate-x-0');
+        overlay.removeClass('hidden');
+        setTimeout(() => overlay.removeClass('opacity-0').addClass('opacity-100'), 10);
+      } else {
+        menu.removeClass('translate-x-0').addClass('-translate-x-full');
+        overlay.removeClass('opacity-100').addClass('opacity-0');
+        setTimeout(() => overlay.addClass('hidden'), 300);
+      }
+    }
+
+    // Déconnexion
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

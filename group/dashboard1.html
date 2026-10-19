@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crédit Agricole - Ma Banque</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        caGreen: '#005d52',
+                        caDarkGreen: '#00473e',
+                        caLightBg: '#f4f6f8',
+                        caCardBg: '#ffffff',
+                        caSidebarBg: '#eef2f3',
+                        caActiveBg: '#d0e1df',
+                        caTextDark: '#1e293b',
+                        caTextMuted: '#64748b'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-caLightBg font-sans text-caTextDark min-h-screen flex flex-col antialiased">
+
+    <!-- TOP HEADER -->
+    <header class="bg-caGreen text-white h-16 px-4 md:px-6 flex items-center justify-between shadow-md sticky top-0 z-50">
+        <!-- Logo Section -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchPage('dashboard')">
+            <div class="flex items-center space-x-1">
+                <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+            </div>
+            <div class="flex flex-col">
+                <span class="font-bold text-lg tracking-wide leading-none">CRÉDIT AGRICOLE</span>
+                <span class="text-xs text-emerald-100 font-medium tracking-wider">Ma Banque</span>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="hidden md:flex items-center relative w-96">
+            <span class="absolute left-3 text-gray-400">
+                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+            </span>
+            <input type="text" placeholder="Rechercher une opération, un bénéficiaire, une aide..." 
+                   class="w-full bg-white text-sm text-gray-800 rounded-md pl-9 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-400 placeholder-gray-400">
+        </div>
+
+        <!-- Right Header Actions -->
+        <div class="flex items-center space-x-6 text-sm">
+            <button onclick="switchPage('dashboard')" class="flex flex-col items-center relative hover:text-emerald-200 transition">
+                <div class="relative">
+                    <i class="fa-regular fa-envelope text-lg"></i>
+                    <span class="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">3</span>
+                </div>
+                <span class="text-[11px] mt-0.5">Messagerie</span>
+            </button>
+
+            <button onclick="switchPage('profil')" class="flex flex-col items-center hover:text-emerald-200 transition">
+                <i class="fa-regular fa-user text-lg"></i>
+                <span class="text-[11px] mt-0.5">Mon profil</span>
+            </button>
+
+            <button onclick="switchPage('index')" class="flex flex-col items-center hover:text-emerald-200 transition" title="Déconnexion">
+                <i class="fa-solid fa-power-off text-lg"></i>
+                <span class="text-[11px] mt-0.5">Déconnexion</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- LEFT SIDEBAR -->
+        <aside id="main-sidebar" class="w-64 bg-caSidebarBg border-r border-gray-200 flex flex-col justify-between hidden lg:flex select-none">
+            <nav class="py-4 space-y-1 px-3 text-sm font-medium">
+                <a href="#" onclick="switchPage('dashboard')" id="nav-dashboard" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-caActiveBg text-caGreen font-semibold">
+                    <i class="fa-solid fa-house w-5 text-center"></i>
+                    <span>Accueil / Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPage('comptes')" id="nav-comptes" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                    <i class="fa-solid fa-wallet w-5 text-center text-gray-500"></i>
+                    <span>Comptes</span>
+                </a>
+                <a href="#" onclick="switchPage('cartes')" id="nav-cartes" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                    <i class="fa-solid fa-credit-card w-5 text-center text-gray-500"></i>
+                    <span>Cartes</span>
+                </a>
+                <a href="#" onclick="switchPage('virement')" id="nav-virement" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                    <i class="fa-solid fa-right-left w-5 text-center text-gray-500"></i>
+                    <span>Virements</span>
+                </a>
+                <a href="#" onclick="switchPage('ajouter-beneficiaire')" id="nav-ajouter-beneficiaire" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                    <i class="fa-solid fa-user-plus w-5 text-center text-gray-500"></i>
+                    <span>Ajouter bénéficiaire</span>
+                </a>
+                <a href="#" onclick="switchPage('rib')" id="nav-rib" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                    <i class="fa-solid fa-file-lines w-5 text-center text-gray-500"></i>
+                    <span>Mon RIB</span>
+                </a>
+                <a href="#" onclick="switchPage('historique')" id="nav-historique" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                    <i class="fa-solid fa-clock-rotate-left w-5 text-center text-gray-500"></i>
+                    <span>Historique / Opérations</span>
+                </a>
+                <a href="#" onclick="switchPage('admin')" id="nav-admin" class="nav-item flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition border-t border-gray-300 mt-2">
+                    <i class="fa-solid fa-shield-halved w-5 text-center text-emerald-700"></i>
+                    <span class="font-bold text-emerald-900">Espace Admin</span>
+                </a>
+            </nav>
+
+            <!-- Bottom Sidebar Promo Box -->
+            <div class="p-4 m-3 bg-white rounded-xl border border-gray-200 shadow-sm text-xs space-y-2">
+                <div class="flex items-center space-x-2 text-caGreen font-semibold">
+                    <i class="fa-solid fa-leaf text-base"></i>
+                    <p class="leading-tight">Le Crédit Agricole s'engage pour une banque plus responsable</p>
+                </div>
+                <a href="#" class="text-caGreen font-bold flex items-center space-x-1 hover:underline pt-1">
+                    <span>En savoir plus</span>
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </a>
+            </div>
+        </aside>
+
+        <!-- DYNAMIC VIEWS CONTAINER -->
+        <main class="flex-1 overflow-y-auto" id="app-content">
+            <!-- Content will be rendered dynamically by JS router -->
+        </main>
+    </div>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-caGreen text-white px-5 py-3 rounded-xl shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center space-x-3">
+        <i class="fa-solid fa-circle-check text-emerald-300 text-lg"></i>
+        <span id="toast-message" class="text-sm font-medium">Opération réussie</span>
+    </div>
+
+    <!-- JAVASCRIPT APP LOGIC & VIEWS -->
+    <script>
+        // Global State & Data Mock
+        const state = {
+            currentPage: 'dashboard',
+            userName: 'Richard',
+            accounts: [
+                { id: 'cc-1', name: 'Compte courant', iban: 'FR76 1660 7000 1234 5678 9012 345', balance: 2317.85, type: 'wallet', color: 'bg-caGreen' },
+                { id: 'la-1', name: 'Livret A', iban: 'FR76 1660 7000 8765 4321 0987 654', balance: 1120.00, type: 'piggy-bank', color: 'bg-rose-700' },
+                { id: 'cj-1', name: 'Compte joint', iban: 'FR76 1660 7000 1357 2468 9012 345', balance: 45.20, type: 'users', color: 'bg-indigo-700' }
+            ],
+            operations: [
+                { date: '14 oct. 2025', title: 'Salaire', subtitle: 'Entreprise', amount: 2000.00, type: 'in', icon: 'fa-arrow-down', color: 'bg-emerald-50 text-caGreen' },
+                { date: '12 oct. 2025', title: 'Supermarché Carrefour', subtitle: 'Carte bancaire', amount: -86.45, type: 'out', icon: 'fa-credit-card', color: 'bg-rose-50 text-rose-600' },
+                { date: '10 oct. 2025', title: 'Virement reçu', subtitle: 'De : Marie Dupont', amount: 120.00, type: 'in', icon: 'fa-arrow-down', color: 'bg-emerald-50 text-caGreen' },
+                { date: '08 oct. 2025', title: 'Prélèvement EDF', subtitle: 'Service', amount: -67.32, type: 'out', icon: 'fa-file-invoice', color: 'bg-amber-50 text-amber-700' },
+                { date: '05 oct. 2025', title: 'Carburant', subtitle: 'Carte bancaire', amount: -72.18, type: 'out', icon: 'fa-credit-card', color: 'bg-rose-50 text-rose-600' },
+                { date: '02 oct. 2025', title: 'Virement vers compte joint', subtitle: 'M. Richard', amount: -300.00, type: 'out', icon: 'fa-users', color: 'bg-indigo-50 text-indigo-700' }
+            ],
+            beneficiaries: [
+                { name: 'Marie Dupont', iban: 'FR76 3000 2000 1234 5678 901' },
+                { name: 'Jean Martin', iban: 'FR76 2001 5000 9876 5432 109' }
+            ],
+            adminSettings: {
+                maintenanceMode: false,
+                maxTransferLimit: 5000,
+                autoValidateTransfers: true
+            }
+        };
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        function switchPage(page) {
+            state.currentPage = page;
+            
+            // Highlight sidebar
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-caActiveBg', 'text-caGreen', 'font-semibold');
+                el.classList.add('text-caTextDark', 'hover:bg-gray-200');
+            });
+            const activeNav = document.getElementById('nav-' + page);
+            if (activeNav) {
+                activeNav.classList.remove('text-caTextDark', 'hover:bg-gray-200');
+                activeNav.classList.add('bg-caActiveBg', 'text-caGreen', 'font-semibold');
+            }
+
+            // Hide/Show Sidebar on index page
+            const sidebar = document.getElementById('main-sidebar');
+            if (page === 'index') {
+                sidebar.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('hidden');
+            }
+
+            renderView();
+            window.scrollTo(0, 0);
+        }
+
+        function getTotalBalance() {
+            return state.accounts.reduce((acc, curr) => acc + curr.balance, 0);
+        }
+
+        function renderView() {
+            const container = document.getElementById('app-content');
+            switch(state.currentPage) {
+                case 'index':
+                    container.innerHTML = renderIndexView();
+                    break;
+                case 'admin':
+                    container.innerHTML = renderAdminView();
+                    break;
+                case 'dashboard':
+                    container.innerHTML = renderDashboardView();
+                    break;
+                case 'historique':
+                    container.innerHTML = renderHistoriqueView();
+                    break;
+                case 'virement':
+                    container.innerHTML = renderVirementView();
+                    break;
+                case 'rib':
+                    container.innerHTML = renderRibView();
+                    break;
+                case 'cartes':
+                    container.innerHTML = renderCartesView();
+                    break;
+                case 'ajouter-beneficiaire':
+                    container.innerHTML = renderAjouterBeneficiaireView();
+                    break;
+                case 'profil':
+                    container.innerHTML = renderProfilView();
+                    break;
+                default:
+                    container.innerHTML = renderDashboardView();
+            }
+        }
+
+        // --- VIEW TEMPLATES ---
+
+        function renderIndexView() {
+            return `
+                <div class="min-h-full bg-gradient-to-br from-caGreen to-caDarkGreen flex flex-col justify-center items-center p-6 text-white text-center">
+                    <div class="bg-white text-caTextDark p-8 rounded-3xl shadow-2xl max-w-md w-full space-y-6">
+                        <div class="flex justify-center">
+                            <div class="w-16 h-16 bg-caGreen text-white rounded-2xl flex items-center justify-center text-3xl shadow-lg">
+                                <i class="fa-solid fa-landmark"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold">Crédit Agricole</h1>
+                            <p class="text-xs text-caTextMuted mt-1">Espace sécurisé de connexion client</p>
+                        </div>
+                        <div class="space-y-4 text-left text-sm">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Identifiant client / Compte</label>
+                                <input type="text" value="98765432101" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-mono text-gray-800 focus:outline-none focus:ring-2 focus:ring-caGreen">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">Code personnel (6 chiffres)</label>
+                                <input type="password" value="******" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 font-mono text-gray-800 focus:outline-none focus:ring-2 focus:ring-caGreen">
+                            </div>
+                        </div>
+                        <button onclick="switchPage('dashboard')" class="w-full bg-caGreen hover:bg-caDarkGreen text-white font-bold py-3.5 rounded-xl shadow-lg transition">
+                            Se connecter
+                        </button>
+                        <div class="text-xs text-caTextMuted pt-2">
+                            <a href="#" class="hover:underline text-caGreen font-semibold">Code oublié ?</a> · <a href="#" class="hover:underline">Devenir client</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdminView() {
+            return `
+                <div class="p-6 md:p-8 space-y-6 max-w-6xl mx-auto">
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-caTextDark flex items-center space-x-2">
+                                <i class="fa-solid fa-shield-halved text-caGreen"></i>
+                                <span>Administration Centrale & Paramètres</span>
+                            </h1>
+                            <p class="text-sm text-caTextMuted mt-1">Gérez la configuration générale de la plateforme bancaire et l'état des services.</p>
+                        </div>
+                        <span class="bg-emerald-100 text-caGreen text-xs font-bold px-3 py-1.5 rounded-full">Mode Admin Actif</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+                            <div class="text-caGreen text-2xl"><i class="fa-solid fa-users"></i></div>
+                            <h3 class="font-bold text-base">Comptes Utilisateurs</h3>
+                            <p class="text-xs text-caTextMuted">1 client actif rattaché (Richard - Solde total: ${getTotalBalance().toLocaleString('fr-FR')} €).</p>
+                            <button onclick="showToast('Synchronisation utilisateurs effectuée')" class="text-xs font-bold text-caGreen hover:underline">Gérer les accès →</button>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+                            <div class="text-caGreen text-2xl"><i class="fa-solid fa-server"></i></div>
+                            <h3 class="font-bold text-base">État des Serveurs API</h3>
+                            <p class="text-xs text-emerald-600 font-semibold flex items-center space-x-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+                                <span>Tous les services opérationnels (100%)</span>
+                            </p>
+                            <button onclick="showToast('Diagnostic serveur OK')" class="text-xs font-bold text-caGreen hover:underline">Lancer un diagnostic →</button>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+                            <div class="text-caGreen text-2xl"><i class="fa-solid fa-lock"></i></div>
+                            <h3 class="font-bold text-base">Sécurité & Logs</h3>
+                            <p class="text-xs text-caTextMuted">Dernière connexion enregistrée il y a quelques instants.</p>
+                            <button onclick="showToast('Rapport de sécurité téléchargé')" class="text-xs font-bold text-caGreen hover:underline">Télécharger les logs →</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                        <h3 class="font-bold text-base text-caTextDark">Paramètres globaux de la maquette</h3>
+                        <div class="space-y-4 text-sm">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">Mode Maintenance du portail</h4>
+                                    <p class="text-xs text-caTextMuted">Activer une bannière de maintenance globale sur l'interface.</p>
+                                </div>
+                                <input type="checkbox" id="admin-maint" ${state.adminSettings.maintenanceMode ? 'checked' : ''} onchange="state.adminSettings.maintenanceMode = this.checked; showToast('Paramètre mis à jour');" class="w-5 h-5 accent-caGreen cursor-pointer">
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                <div>
+                                    <h4 class="font-bold text-gray-800">Plafond maximum de virement instantané</h4>
+                                    <p class="text-xs text-caTextMuted">Définir le montant limite autorisé par virement.</p>
+                                </div>
+                                <input type="number" value="${state.adminSettings.maxTransferLimit}" onchange="state.adminSettings.maxTransferLimit = this.value; showToast('Plafond mis à jour');" class="bg-white border border-gray-300 rounded-lg px-3 py-1.5 w-32 font-mono text-right">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDashboardView() {
+            const total = getTotalBalance();
+            return `
+                <div class="p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto">
+                    <!-- MAIN CENTER COLUMN -->
+                    <div class="flex-1 space-y-6">
+                        <div>
+                            <h1 class="text-2xl md:text-3xl font-bold text-caTextDark">Bonjour ${state.userName},</h1>
+                            <p class="text-caTextMuted text-sm mt-1">Voici un aperçu de votre situation financière.</p>
+                        </div>
+
+                        <!-- Solde Total Card -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative overflow-hidden">
+                            <p class="text-xs font-semibold text-caTextMuted tracking-wide uppercase">Solde total de vos comptes</p>
+                            <div class="flex items-baseline space-x-3 mt-2">
+                                <span class="text-3xl md:text-4xl font-extrabold text-caTextDark">${total.toLocaleString('fr-FR', {minimumFractionDigits: 2})} €</span>
+                                <span class="text-caGreen bg-emerald-50 px-2 py-1 rounded-full text-xs flex items-center space-x-1 border border-emerald-100">
+                                    <i class="fa-solid fa-eye-slash text-xs"></i>
+                                </span>
+                            </div>
+                            <div class="flex items-center space-x-1.5 mt-3 text-emerald-600 text-xs font-semibold">
+                                <i class="fa-solid fa-arrow-trend-up text-sm"></i>
+                                <span>+ 1 240,00 € sur le mois dernier</span>
+                            </div>
+                        </div>
+
+                        <!-- Vos Comptes Section -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                            <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                                <h2 class="text-base font-bold text-caTextDark">Vos comptes</h2>
+                                <button onclick="switchPage('comptes')" class="text-xs font-semibold text-caGreen hover:underline flex items-center space-x-1">
+                                    <span>Voir tous mes comptes</span>
+                                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                </button>
+                            </div>
+
+                            <div class="divide-y divide-gray-100">
+                                ${state.accounts.map(acc => `
+                                    <div onclick="switchPage('historique')" class="py-3.5 flex items-center justify-between hover:bg-gray-50 px-2 rounded-xl transition cursor-pointer">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-10 h-10 rounded-xl ${acc.color} text-white flex items-center justify-center text-lg shadow-sm">
+                                                <i class="fa-solid fa-${acc.type}"></i>
+                                            </div>
+                                            <div>
+                                                <h3 class="font-bold text-sm text-caTextDark">${acc.name}</h3>
+                                                <p class="text-xs text-caTextMuted font-mono mt-0.5">${acc.iban}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <span class="font-bold text-base text-caTextDark">${acc.balance.toLocaleString('fr-FR', {minimumFractionDigits: 2})} €</span>
+                                            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Dernières Opérations Section -->
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                            <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                                <h2 class="text-base font-bold text-caTextDark">Dernières opérations</h2>
+                                <button onclick="switchPage('historique')" class="text-xs font-semibold text-caGreen hover:underline flex items-center space-x-1">
+                                    <span>Voir toutes les opérations</span>
+                                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                </button>
+                            </div>
+
+                            <div class="divide-y divide-gray-100 text-sm">
+                                ${state.operations.slice(0, 5).map(op => `
+                                    <div class="py-3.5 flex items-center justify-between hover:bg-gray-50 px-2 rounded-xl transition">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-9 h-9 rounded-xl ${op.color} flex items-center justify-center text-sm font-semibold">
+                                                <i class="fa-solid ${op.icon}"></i>
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="text-xs text-caTextMuted font-medium">${op.date}</span>
+                                                    <span class="font-bold text-caTextDark">${op.title}</span>
+                                                </div>
+                                                <p class="text-xs text-caTextMuted mt-0.5">${op.subtitle}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <span class="font-bold ${op.amount > 0 ? 'text-emerald-600' : 'text-rose-600'}">${op.amount > 0 ? '+' : ''} ${op.amount.toLocaleString('fr-FR', {minimumFractionDigits: 2})} €</span>
+                                            <i class="fa-solid fa-chevron-right text-xs text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <div class="pt-3 text-center border-t border-gray-100">
+                                <button onclick="switchPage('historique')" class="text-xs font-semibold text-caGreen hover:underline">Voir toutes les opérations <i class="fa-solid fa-arrow-right text-[10px]"></i></button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- RIGHT COLUMN WIDGETS -->
+                    <div class="w-full lg:w-80 space-y-6">
+                        <!-- Bank Card Widget -->
+                        <div class="bg-gradient-to-br from-caGreen to-teal-800 rounded-2xl p-5 text-white shadow-md relative overflow-hidden flex flex-col justify-between h-48">
+                            <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
+                            <div class="flex justify-between items-start relative z-10">
+                                <div class="flex items-center space-x-1.5">
+                                    <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                    </svg>
+                                    <span class="text-xs font-bold tracking-wider">CRÉDIT AGRICOLE</span>
+                                </div>
+                                <div class="w-9 h-7 bg-amber-200 rounded flex items-center justify-center shadow-inner ml-auto">
+                                    <div class="w-6 h-4 border border-amber-400 rounded-sm grid grid-cols-2 gap-0.5 p-0.5">
+                                        <div class="bg-amber-300"></div><div class="bg-amber-300"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-end relative z-10 mt-4">
+                                <div>
+                                    <div class="flex items-center space-x-2 text-emerald-200 text-sm mb-1">
+                                        <i class="fa-solid fa-wifi rotate-90"></i>
+                                    </div>
+                                    <span class="font-mono tracking-widest text-base font-semibold">**** 5678</span>
+                                </div>
+                                <div>
+                                    <span class="font-extrabold italic tracking-wider text-xl text-white">VISA</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
+                            <div>
+                                <h3 class="font-bold text-sm text-caTextDark">Ma carte bancaire</h3>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span class="text-xs text-caTextMuted font-medium">Débit immédiat</span>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-gray-100">
+                                <button onclick="switchPage('cartes')" class="text-xs font-bold text-caGreen flex items-center space-x-1 hover:underline">
+                                    <span>Gérer ma carte</span>
+                                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Raccourcis Section -->
+                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-3">
+                            <h3 class="font-bold text-sm text-caTextDark pb-1 border-b border-gray-100">Raccourcis</h3>
+                            <div class="space-y-1 text-sm font-medium">
+                                <button onclick="switchPage('virement')" class="w-full text-left flex items-center space-x-3 p-2.5 rounded-xl hover:bg-gray-50 text-caTextDark transition">
+                                    <i class="fa-solid fa-arrow-trend-up text-caGreen w-5"></i>
+                                    <span>Faire un virement</span>
+                                </button>
+                                <button onclick="switchPage('rib')" class="w-full text-left flex items-center space-x-3 p-2.5 rounded-xl hover:bg-gray-50 text-caTextDark transition">
+                                    <i class="fa-solid fa-file-lines text-caGreen w-5"></i>
+                                    <span>Consulter mon RIB</span>
+                                </button>
+                                <button onclick="showToast('Téléchargement du relevé en cours...')" class="w-full text-left flex items-center space-x-3 p-2.5 rounded-xl hover:bg-gray-50 text-caTextDark transition">
+                                    <i class="fa-solid fa-download text-caGreen w-5"></i>
+                                    <span>Télécharger un relevé</span>
+                                </button>
+                                <button onclick="switchPage('cartes')" class="w-full text-left flex items-center space-x-3 p-2.5 rounded-xl hover:bg-gray-50 text-caTextDark transition">
+                                    <i class="fa-solid fa-sliders text-caGreen w-5"></i>
+                                    <span>Gérer mes plafonds</span>
+                                </button>
+                                <button onclick="showToast('Service client : 09 69 36 60 60')" class="w-full text-left flex items-center space-x-3 p-2.5 rounded-xl hover:bg-gray-50 text-caTextDark transition">
+                                    <i class="fa-solid fa-headset text-caGreen w-5"></i>
+                                    <span>Contacter ma banque</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHistoriqueView() {
+            return `
+                <div class="p-6 md:p-8 space-y-6 max-w-5xl mx-auto">
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-caTextDark">Historique complet des opérations</h1>
+                            <p class="text-sm text-caTextMuted mt-1">Consultez l'ensemble de vos mouvements bancaires par compte.</p>
+                        </div>
+                        <button onclick="switchPage('dashboard')" class="bg-gray-200 hover:bg-gray-300 text-caTextDark font-bold text-xs px-4 py-2 rounded-xl transition">
+                            ← Retour Accueil
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                        <div class="flex space-x-3">
+                            <input type="text" placeholder="Rechercher une opération..." class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-caGreen">
+                            <select class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-caGreen">
+                                <option>Tous les comptes</option>
+                                <option>Compte courant</option>
+                                <option>Livret A</option>
+                                <option>Compte joint</option>
+                            </select>
+                        </div>
+
+                        <div class="divide-y divide-gray-100 text-sm">
+                            ${state.operations.map(op => `
+                                <div class="py-4 flex items-center justify-between hover:bg-gray-50 px-2 rounded-xl transition">
+                                    <div class="flex items-center space-x-4">
+                                        <div class="w-10 h-10 rounded-xl ${op.color} flex items-center justify-center text-sm font-semibold">
+                                            <i class="fa-solid ${op.icon}"></i>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-xs text-caTextMuted font-medium">${op.date}</span>
+                                                <span class="font-bold text-caTextDark text-base">${op.title}</span>
+                                            </div>
+                                            <p class="text-xs text-caTextMuted mt-0.5">${op.subtitle}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="font-bold text-base ${op.amount > 0 ? 'text-emerald-600' : 'text-rose-600'}">${op.amount > 0 ? '+' : ''} ${op.amount.toLocaleString('fr-FR', {minimumFractionDigits: 2})} €</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderVirementView() {
+            return `
+                <div class="p-6 md:p-8 space-y-6 max-w-2xl mx-auto">
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-caTextDark">Effectuer un virement</h1>
+                            <p class="text-sm text-caTextMuted mt-1">Transférez des fonds entre vos comptes ou vers un bénéficiaire.</p>
+                        </div>
+                        <button onclick="switchPage('dashboard')" class="bg-gray-200 hover:bg-gray-300 text-caTextDark font-bold text-xs px-4 py-2 rounded-xl transition">
+                            ← Retour
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Compte à débiter</label>
+                            <select id="v-from" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-caGreen">
+                                ${state.accounts.map(a => `<option value="${a.name}">${a.name} (${a.balance.toLocaleString('fr-FR')} €)</option>`).join('')}
+                            </select>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-semibold text-gray-700">Bénéficiaire</label>
+                                <button onclick="switchPage('ajouter-beneficiaire')" class="text-xs text-caGreen font-bold hover:underline">+ Ajouter un bénéficiaire</button>
+                            </div>
+                            <select id="v-to" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-caGreen">
+                                <option>Compte personnel - Livret A</option>
+                                ${state.beneficiaries.map(b => `<option>${b.name} (${b.iban})</option>`).join('')}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Montant (€)</label>
+                            <input type="number" id="v-amount" placeholder="0.00" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-caGreen">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Motif du virement (optionnel)</label>
+                            <input type="text" placeholder="Ex: Cadeau, Loyer, Remboursement..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-caGreen">
+                        </div>
+
+                        <button onclick="handleExecuteTransfer()" class="w-full bg-caGreen hover:bg-caDarkGreen text-white font-bold py-3.5 rounded-xl shadow transition">
+                            Valider et exécuter le virement
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleExecuteTransfer() {
+            const amountInput = document.getElementById('v-amount');
+            const amt = parseFloat(amountInput.value);
+            if(!amt || amt <= 0) {
+                showToast('Veuillez entrer un montant valide.');
+                return;
+            }
+            state.accounts[0].balance -= amt;
+            state.operations.unshift({
+                date: 'Aujourd\'hui',
+                title: 'Virement émis',
+                subtitle: 'Vers bénéficiaire',
+                amount: -amt,
+                type: 'out',
+                icon: 'fa-arrow-up',
+                color: 'bg-amber-50 text-amber-700'
+            });
+            showToast('Virement exécuté avec succès !');
+            switchPage('dashboard');
+        }
+
+        function renderRibView() {
+            return `
+                <div class="p-6 md:p-8 space-y-6 max-w-2xl mx-auto">
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-caTextDark">Mon Relevé d'Identité Bancaire (RIB)</h1>
+                            <p class="text-sm text-caTextMuted mt-1">Partagez ou téléchargez votre RIB en toute sécurité.</p>
+                        </div>
+                        <button onclick="switchPage('dashboard')" class="bg-gray-200 hover:bg-gray-300 text-caTextDark font-bold text-xs px-4 py-2 rounded-xl transition">
+                            ← Retour
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
+                        <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 space-y-4 text-center">
+                            <div class="w-12 h-12 bg-emerald-50 text-caGreen rounded-xl flex items-center justify-center mx-auto text-xl">
+                                <i class="fa-solid fa-file-invoice"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-base text-caTextDark">Compte Courant Principal</h3>
+                                <p class="text-xs text-caTextMuted">Titulaire : M. Richard</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-xl font-mono text-sm tracking-wider font-bold text-caTextDark select-all">
+                                FR76 1660 7000 1234 5678 9012 345
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-xs text-gray-600 pt-2 font-mono">
+                                <div class="bg-gray-50 p-2 rounded">Code Banque: 16607</div>
+                                <div class="bg-gray-50 p-2 rounded">Code Guichet: 00012</div>
+                                <div class="bg-gray-50 p-2 rounded">Clé RIB: 34</div>
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-3">
+                            <button onclick="showToast('RIB copié dans le presse-papier')" class="flex-1 bg-caGreen hover:bg-caDarkGreen text-white font-bold py-3 rounded-xl shadow transition">
+                                <i class="fa-solid fa-copy mr-2"></i> Copier le RIB
+                            </button>
+                            <button onclick="showToast('Téléchargement du PDF en cours...')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-caTextDark font-bold py-3 rounded-xl transition">
+                                <i class="fa-solid fa-download mr-2"></i> Télécharger en PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCartesView() {
+            return `
+                <div class="p-6 md:p-8 space-y-6 max-w-3xl mx-auto">
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-caTextDark">Gestion de vos cartes bancaires</h1>
+                            <p class="text-sm text-caTextMuted mt-1">Paramétrez vos plafonds, sécurité et options de paiement.</p>
+                        </div>
+                        <button onclick="switchPage('dashboard')" class="bg-gray-200 hover:bg-gray-300 text-caTextDark font-bold text-xs px-4 py-2 rounded-xl transition">
+                            ← Retour
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gradient-to-br from-caGreen to-teal-800 rounded-2xl p-5 text-white shadow-md relative overflow-hidden flex flex-col justify-between h-48">
+                            <div class="flex justify-between items-start">
+                                <span class="text-xs font-bold tracking-wider">CRÉDIT AGRICOLE VISA</span>
+                                <div class="w-8 h-6 bg-amber-200 rounded"></div>
+                            </div>
+                            <div>
+                                <span class="font-mono tracking-widest text-base font-semibold">**** 5678</span>
+                                <p class="text-xs text-emerald-200 mt-1">Débit immédiat · Actif</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                            <h3 class="font-bold text-sm text-caTextDark">Sécurité & Options</h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex items-center justify-between">
+                                    <span>Paiement sans contact</span>
+                                    <input type="checkbox" checked onchange="showToast('Option mise à jour')" class="w-4 h-4 accent-caGreen cursor-pointer">
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span>Paiement sur Internet</span>
+                                    <input type="checkbox" checked onchange="showToast('Option mise à jour')" class="w-4 h-4 accent-caGreen cursor-pointer">
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span>Paiement à l'étranger</span>
+                                    <input type="checkbox" onchange="showToast('Option mise à jour')" class="w-4 h-4 accent-caGreen cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAjouterBeneficiaireView() {
+            return `
+                <div class="p-6 md:p-8 space-y-6 max-w-xl mx-auto">
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-caTextDark">Ajouter un bénéficiaire</h1>
+                            <p class="text-sm text-caTextMuted mt-1">Enregistrez un nouveau compte pour vos futurs virements.</p>
+                        </div>
+                        <button onclick="switchPage('virement')" class="bg-gray-200 hover:bg-gray-300 text-caTextDark font-bold text-xs px-4 py-2 rounded-xl transition">
+                            ← Retour Virements
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Nom du bénéficiaire</label>
+                            <input type="text" id="ben-name" placeholder="Ex: Sophie Durant" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-caGreen">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">IBAN du bénéficiaire</label>
+                            <input type="text" id="ben-iban" placeholder="FR76 ..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-caGreen">
+                        </div>
+                        <button onclick="handleAddBeneficiary()" class="w-full bg-caGreen hover:bg-caDarkGreen text-white font-bold py-3.5 rounded-xl shadow transition">
+                            Enregistrer le bénéficiaire
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function handleAddBeneficiary() {
+            const name = document.getElementById('ben-name').value;
+            const iban = document.getElementById('ben-iban').value;
+            if(!name || !iban) {
+                showToast('Veuillez remplir tous les champs.');
+                return;
+            }
+            state.beneficiaries.push({ name, iban });
+            showToast('Bénéficiaire ajouté avec succès !');
+            switchPage('virement');
+        }
+
+        function renderProfilView() {
+            return `
+                <div class="p-6 md:p-8 space-y-6 max-w-2xl mx-auto">
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-caTextDark">Mon Profil Client</h1>
+                            <p class="text-sm text-caTextMuted mt-1">Vos informations personnelles et coordonnées bancaires.</p>
+                        </div>
+                        <button onclick="switchPage('dashboard')" class="bg-gray-200 hover:bg-gray-300 text-caTextDark font-bold text-xs px-4 py-2 rounded-xl transition">
+                            ← Retour
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4 text-sm">
+                        <div class="flex items-center space-x-4 pb-4 border-b border-gray-100">
+                            <div class="w-16 h-16 bg-caGreen text-white rounded-2xl flex items-center justify-center text-2xl font-bold">
+                                ${state.userName.charAt(0)}
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-caTextDark">M. ${state.userName}</h3>
+                                <p class="text-xs text-caTextMuted">Client depuis octobre 2021 · Agence Paris Opéra</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between py-2 border-b border-gray-50">
+                                <span class="text-caTextMuted">Email</span>
+                                <span class="font-bold text-caTextDark">richard.client@example.com</span>
+                            </div>
+                            <div class="flex justify-between py-2 border-b border-gray-50">
+                                <span class="text-caTextMuted">Téléphone mobile</span>
+                                <span class="font-bold text-caTextDark">+33 6 12 34 56 78</span>
+                            </div>
+                            <div class="flex justify-between py-2">
+                                <span class="text-caTextMuted">Adresse postale</span>
+                                <span class="font-bold text-caTextDark">12 rue de la République, 75001 Paris</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize App on load
+        window.onload = function() {
+            switchPage('dashboard');
+        };
+    </script>
+</body>
+</html>

