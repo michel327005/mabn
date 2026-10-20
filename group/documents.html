@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BNP Paribas - Documents & Relevés</title>
+  <link rel="shortcut icon" href="https://lh3.googleusercontent.com/48IHZd1EHIk-Dg1m6J36FZ6Pnlz0oLHVdqkzNdS8xJPCVdQk3EgZa014nPNzwi7o918" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+      tailwind.config = {
+          theme: {
+              extend: {
+                  colors: {
+                      caGreen: '#005d52',
+                      caDarkGreen: '#00473e',
+                      caLightBg: '#f4f6f8',
+                      caSidebarBg: '#eef2f3',
+                      caActiveBg: '#d0e1df',
+                      caTextDark: '#1e293b',
+                      caTextMuted: '#64748b'
+                  }
+              }
+          }
+      }
+  </script>
+</head>
+<body class="bg-caLightBg text-caTextDark font-sans pb-20 lg:pb-0 min-h-screen flex flex-col antialiased">
+
+  <div id="mobile-menu-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/50 z-50 hidden opacity-0 transition-opacity duration-300"></div>
+
+  <!-- MOBILE DRAWER -->
+  <aside id="mobile-slide-menu" class="fixed top-0 left-0 w-72 h-full bg-caSidebarBg z-50 transform -translate-x-full transition-transform duration-300 shadow-2xl flex flex-col justify-between lg:hidden overflow-y-auto">
+    <div>
+      <div class="bg-caGreen text-white p-5 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div id="slide-user-avatar" class="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-white border border-emerald-400">--</div>
+          <div>
+            <p id="slide-user-name" class="font-bold text-sm leading-tight">Chargement...</p>
+            <p class="text-[11px] text-emerald-200">Espace Privé</p>
+          </div>
+        </div>
+        <button onclick="toggleMobileMenu()" class="text-white text-xl focus:outline-none p-1"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <nav class="p-4 space-y-1 text-sm font-medium">
+        <a href="dashboard.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200"><i class="fa-solid fa-chart-line w-5 text-gray-500"></i><span>Tableau de bord</span></a>
+        <a href="comptes.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200"><i class="fa-solid fa-wallet w-5 text-gray-500"></i><span>Comptes</span></a>
+        <a href="documents.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-caActiveBg text-caGreen font-semibold"><i class="fa-solid fa-folder-open w-5"></i><span>Documents</span></a>
+        <a href="messages.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200"><i class="fa-regular fa-envelope w-5 text-gray-500"></i><span>Messages</span></a>
+      </nav>
+    </div>
+    <div class="p-4 border-t border-gray-200">
+      <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 bg-red-50 text-red-600 font-semibold py-3 px-4 rounded-xl text-sm"><i class="fa-solid fa-power-off"></i><span>Déconnexion</span></button>
+    </div>
+  </aside>
+
+  <!-- HEADER -->
+  <header class="bg-caGreen text-white sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleMobileMenu()" class="lg:hidden text-white text-xl p-1.5 focus:outline-none"><i class="fa-solid fa-bars"></i></button>
+        <div class="flex items-center space-x-2 cursor-pointer" onclick="location.href='dashboard.html'">
+          <img src="https://wp.logos-download.com/wp-content/uploads/2016/04/BNP_Paribas_logo_logotype_emblem.png?dl" height="135" width="165" alt="BNP Paribas Logo" class="brightness-200 invert">
+        </div>
+      </div>
+      <div class="hidden md:flex items-center space-x-4 text-sm">
+        <span id="nav-user-name">Chargement...</span>
+        <button onclick="logout()" class="text-xs bg-emerald-800 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-md"><i class="fa-solid fa-power-off mr-1"></i> Déconnexion</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="w-64 bg-caSidebarBg border-r border-gray-200 flex flex-col justify-between hidden lg:flex shrink-0">
+      <nav class="py-4 space-y-1 px-3 text-sm font-medium">
+        <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200"><i class="fa-solid fa-chart-pie w-5 text-center text-gray-500"></i><span>Tableau de bord</span></a>
+        <a href="comptes.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200"><i class="fa-solid fa-wallet w-5 text-center text-gray-500"></i><span>Comptes</span></a>
+        <a href="documents.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-caActiveBg text-caGreen font-bold"><i class="fa-solid fa-folder-open w-5 text-center"></i><span>Documents</span></a>
+        <a href="messages.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200"><i class="fa-regular fa-envelope w-5 text-center text-gray-500"></i><span>Messages</span></a>
+      </nav>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6">
+      <div class="max-w-5xl mx-auto space-y-6">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-caTextDark flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-caGreen"></i> Vos Documents & Attestations
+          </h1>
+          <p class="text-sm text-caTextMuted mt-1">Consultez et téléchargez vos documents bancaires électroniques</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <h3 class="font-bold text-caTextDark border-b pb-3">Documents disponibles</h3>
+
+          <div class="space-y-3 text-xs">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+              <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-file-pdf text-red-500 text-xl"></i>
+                <div>
+                  <p class="font-bold text-caTextDark">Relevé de compte mensuel - Octobre 2026</p>
+                  <p class="text-[10px] text-caTextMuted">Disponible • PDF (240 Ko)</p>
+                </div>
+              </div>
+              <button onclick="toastr.success('Téléchargement du relevé démarré')" class="text-caGreen font-bold hover:underline"><i class="fa-solid fa-download"></i></button>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+              <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-file-pdf text-red-500 text-xl"></i>
+                <div>
+                  <p class="font-bold text-caTextDark">Relevé d'identité bancaire (RIB / IBAN)</p>
+                  <p class="text-[10px] text-caTextMuted">Document officiel • PDF</p>
+                </div>
+              </div>
+              <a href="rib.html" class="text-caGreen font-bold hover:underline"><i class="fa-solid fa-download"></i></a>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+              <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-file-contract text-emerald-700 text-xl"></i>
+                <div>
+                  <p class="font-bold text-caTextDark">Attestation de Solde et Capacité Financière</p>
+                  <p class="text-[10px] text-caTextMuted">Généré le 01/10/2026</p>
+                </div>
+              </div>
+              <button onclick="toastr.success('Génération de l\'attestation en cours')" class="text-caGreen font-bold hover:underline"><i class="fa-solid fa-download"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDMBGGXNwEHk4gCwzsofxVYIH0dJ6usyek",
+      authDomain: "alliance-67cb1.firebaseapp.com",
+      projectId: "alliance-67cb1",
+      storageBucket: "alliance-67cb1.firebasestorage.app",
+      messagingSenderId: "464968433664",
+      appId: "1:464968433664:web:0604cbdaf2b36e55e718e5"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const activeUserId = sessionStorage.getItem('activeUserId');
+    if (!activeUserId) window.location.href = "index.html";
+
+    $(function() {
+      db.collection('users').doc(activeUserId).onSnapshot((doc) => {
+        if (doc.exists) {
+          const user = doc.data();
+          const prenom = user.prenom || 'Client';
+          const nom = user.nom || '';
+          $('#slide-user-avatar').text(`${prenom[0] || 'C'}${nom[0] || ''}`.toUpperCase());
+          $('#slide-user-name, #nav-user-name').text(prenom);
+        } else {
+          logout();
+        }
+      });
+    });
+
+    function toggleMobileMenu() {
+      const menu = $('#mobile-slide-menu');
+      const overlay = $('#mobile-menu-overlay');
+      if (menu.hasClass('-translate-x-full')) {
+        menu.removeClass('-translate-x-full').addClass('translate-x-0');
+        overlay.removeClass('hidden').addClass('opacity-100');
+      } else {
+        menu.removeClass('translate-x-0').addClass('-translate-x-full');
+        overlay.addClass('hidden');
+      }
+    }
+
+    function logout() { sessionStorage.clear(); window.location.href = "index.html"; }
+  </script>
+</body>
+</html>

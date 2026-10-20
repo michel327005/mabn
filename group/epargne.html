@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BNP Paribas - Tableau de Bord</title>
+  <link rel="shortcut icon" href="https://lh3.googleusercontent.com/48IHZd1EHIk-Dg1m6J36FZ6Pnlz0oLHVdqkzNdS8xJPCVdQk3EgZa014nPNzwi7o918" />
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- jQuery & Toastr -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+  <!-- Firebase v8 SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+      tailwind.config = {
+          theme: {
+              extend: {
+                  colors: {
+                      caGreen: '#005d52',
+                      caDarkGreen: '#00473e',
+                      caLightBg: '#f4f6f8',
+                      caCardBg: '#ffffff',
+                      caSidebarBg: '#eef2f3',
+                      caActiveBg: '#d0e1df',
+                      caTextDark: '#1e293b',
+                      caTextMuted: '#64748b'
+                  },
+                  fontFamily: {
+                      sans: ['Inter', 'sans-serif'],
+                  }
+              }
+          }
+      }
+  </script>
+
+  <style>
+    .mobile-nav-bottom {
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    }
+  </style>
+</head>
+<body class="bg-caLightBg text-caTextDark font-sans pb-20 lg:pb-0 min-h-screen flex flex-col antialiased">
+
+  <!-- ================= OVERLAY MOBILE ================= -->
+  <div id="mobile-menu-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-black/50 z-50 hidden opacity-0 transition-opacity duration-300"></div>
+
+  <!-- ================= MENU LATÉRAL SLIDE (MOBILE DRAWER) ================= -->
+  <aside id="mobile-slide-menu" class="fixed top-0 left-0 w-72 h-full bg-caSidebarBg z-50 transform -translate-x-full transition-transform duration-300 ease-in-out shadow-2xl flex flex-col justify-between lg:hidden overflow-y-auto">
+    <div>
+      <div class="bg-caGreen text-white p-5 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div id="slide-user-avatar" class="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-white border border-emerald-400">
+            --
+          </div>
+          <div>
+            <p id="slide-user-name" class="font-bold text-sm leading-tight">Chargement...</p>
+            <p class="text-[11px] text-emerald-200">Banque Privée</p>
+          </div>
+        </div>
+        <button onclick="toggleMobileMenu()" class="text-white hover:text-emerald-200 text-xl focus:outline-none p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <nav class="p-4 space-y-1 text-sm font-medium">
+        <a href="dashboard.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl bg-caActiveBg text-caGreen font-semibold">
+          <i class="fa-solid fa-chart-line w-5"></i>
+          <span>Tableau de bord</span>
+        </a>
+        <a href="comptes.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-wallet w-5 text-gray-500"></i>
+          <span>Comptes</span>
+        </a>
+        <a href="placements.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-arrow-trend-up w-5 text-gray-500"></i>
+          <span>Placements & Bourse</span>
+        </a>
+        <a href="comptes.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-piggy-bank w-5 text-gray-500"></i>
+          <span>Épargne</span>
+        </a>
+        <a href="virement.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-money-bill-transfer w-5 text-gray-500"></i>
+          <span>Paiements & Virements</span>
+        </a>
+        <a href="documents.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition">
+          <i class="fa-solid fa-folder-open w-5 text-gray-500"></i>
+          <span>Documents & RIB</span>
+        </a>
+        <a href="messages.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="fa-regular fa-envelope w-5 text-gray-500"></i>
+            <span>Messages</span>
+          </div>
+          <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+        </a>
+        <a href="profil.html" class="flex items-center space-x-3 px-4 py-3 rounded-xl text-caTextDark hover:bg-gray-200 transition border-t border-gray-300 mt-2">
+          <i class="fa-regular fa-user w-5 text-gray-500"></i>
+          <span>Mon profil</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-gray-200">
+      <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-3 px-4 rounded-xl text-sm transition">
+        <i class="fa-solid fa-power-off"></i>
+        <span>Déconnexion</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= EN-TÊTE / NAVBAR ================= -->
+  <header class="bg-caGreen text-white sticky top-0 z-40 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      
+      <div class="flex items-center space-x-3">
+        <button onclick="toggleMobileMenu()" class="lg:hidden text-white text-xl p-1.5 rounded-lg hover:bg-emerald-800 focus:outline-none transition">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        
+        <div class="flex items-center space-x-2 cursor-pointer" onclick="location.href='dashboard.html'">
+          <img src="https://wp.logos-download.com/wp-content/uploads/2016/04/BNP_Paribas_logo_logotype_emblem.png?dl" height="135" width="165" alt="BNP Paribas Logo" class="brightness-200 invert">
+        </div>
+      </div>
+
+      <nav class="hidden md:flex space-x-6 text-sm font-medium">
+        <a href="dashboard.html" class="text-white underline decoration-2 underline-offset-4 font-semibold">Tableau de bord</a>
+        <a href="comptes.html" class="hover:text-emerald-200 transition">Comptes & Épargne</a>
+        <a href="virement.html" class="hover:text-emerald-200 transition">Paiements</a>
+        <a href="messages.html" class="hover:text-emerald-200 transition">Messagerie</a>
+      </nav>
+
+      <div class="hidden md:flex items-center space-x-4 text-sm">
+        <a href="profil.html" class="flex items-center space-x-2 hover:text-emerald-200">
+          <i class="fa-regular fa-circle-user text-lg"></i>
+          <span id="nav-user-name">Chargement...</span>
+        </a>
+        <button onclick="logout()" class="text-xs bg-emerald-800 hover:bg-emerald-900 text-white px-3 py-1.5 rounded-md transition">
+          <i class="fa-solid fa-power-off mr-1"></i> Déconnexion
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= CONTENEUR GLOBAL AVEC SIDEBAR DESKTOP ================= -->
+  <div class="flex flex-1 overflow-hidden">
+      
+      <!-- DESKTOP LEFT SIDEBAR -->
+      <aside class="w-64 bg-caSidebarBg border-r border-gray-200 flex flex-col justify-between hidden lg:flex select-none shrink-0">
+          <nav class="py-4 space-y-1 px-3 text-sm font-medium">
+              <a href="dashboard.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg bg-caActiveBg text-caGreen font-bold">
+                  <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                  <span>Tableau de bord</span>
+              </a>
+              <a href="comptes.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                  <i class="fa-solid fa-wallet w-5 text-center text-gray-500"></i>
+                  <span>Comptes</span>
+              </a>
+              <a href="placements.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                  <i class="fa-solid fa-arrow-trend-up w-5 text-center text-gray-500"></i>
+                  <span>Placements & Bourse</span>
+              </a>
+              <a href="comptes.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                  <i class="fa-solid fa-piggy-bank w-5 text-center text-gray-500"></i>
+                  <span>Épargne</span>
+              </a>
+              <a href="virement.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                  <i class="fa-solid fa-money-bill-transfer w-5 text-center text-gray-500"></i>
+                  <span>Paiements</span>
+              </a>
+              <a href="documents.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition">
+                  <i class="fa-solid fa-folder-open w-5 text-center text-gray-500"></i>
+                  <span>Documents</span>
+              </a>
+              <a href="messages.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition justify-between">
+                  <div class="flex items-center space-x-3">
+                    <i class="fa-regular fa-envelope w-5 text-center text-gray-500"></i>
+                    <span>Messages</span>
+                  </div>
+                  <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+              </a>
+              <a href="profil.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-caTextDark hover:bg-gray-200 transition border-t border-gray-300 mt-2">
+                  <i class="fa-regular fa-user w-5 text-center text-gray-500"></i>
+                  <span>Mon profil</span>
+              </a>
+          </nav>
+
+          <div class="p-4 m-3 bg-white rounded-xl border border-gray-200 shadow-sm text-xs space-y-2">
+              <div class="flex items-center space-x-2 text-caGreen font-semibold">
+                  <i class="fa-solid fa-shield-halved text-base"></i>
+                  <p class="leading-tight">Espace sécurisé Banque Privée</p>
+              </div>
+              <p class="text-[11px] text-caTextMuted">Vos données et transactions sont protégées par le chiffrement BNP Paribas.</p>
+          </div>
+      </aside>
+
+      <!-- ================= CONTENU PRINCIPAL (3 COLONNES SUR GRAND ÉCRAN) ================= -->
+      <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+
+          <!-- SALUTATION & BANNIÈRE D'ACCUEIL -->
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <div>
+              <h1 class="text-2xl md:text-3xl font-extrabold text-caTextDark">
+                Bonjour <span id="welcome-user-name" class="text-caGreen">...</span> 👋
+              </h1>
+              <p class="text-xs md:text-sm text-caTextMuted mt-1">Dernière connexion enregistrée : <span id="last-login-date" class="font-medium text-gray-700">Aujourd'hui à 09:41</span></p>
+            </div>
+            <div class="flex items-center gap-3">
+              <a href="virement.html" class="bg-caGreen hover:bg-caDarkGreen text-white text-xs md:text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow flex items-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Nouveau virement</span>
+              </a>
+              <a href="rib.html" class="bg-gray-100 hover:bg-gray-200 text-caTextDark text-xs md:text-sm font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+                <i class="fa-solid fa-download"></i>
+                <span>Télécharger RIB</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- LAYOUT EN GRID MAIN (8 COLONNES) + SIDEBAR DROITE (4 COLONNES) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- ================= ZONE CENTRALE (8 COLONNES) ================= -->
+            <div class="lg:col-span-8 space-y-6">
+
+              <!-- 1. ALERTES ET NOTIFICATIONS -->
+              <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl shadow-sm flex items-start justify-between gap-3">
+                <div class="flex items-start space-x-3">
+                  <i class="fa-solid fa-triangle-exclamation text-amber-600 text-xl mt-0.5"></i>
+                  <div>
+                    <h4 class="text-xs font-bold text-amber-900 uppercase tracking-wider">Alerte Sécurité / Information</h4>
+                    <p class="text-xs text-amber-800 mt-0.5">Mise à jour réglementaire : pensez à confirmer votre questionnaire de profil investisseur pour 2026.</p>
+                  </div>
+                </div>
+                <button onclick="$(this).parent().fadeOut()" class="text-amber-700 hover:text-amber-900 text-sm">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+
+              <!-- 2. SYNTHÈSE DU PATRIMOINE GLOBALE -->
+              <div class="bg-gradient-to-br from-caGreen to-emerald-900 text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 opacity-10 text-9xl">
+                  <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <div class="relative z-10 space-y-4">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold">Patrimoine Total Estimé</span>
+                    <span class="text-[10px] bg-emerald-800/80 px-2.5 py-1 rounded-full text-emerald-100 font-mono">Actualisé en temps réel</span>
+                  </div>
+
+                  <div class="flex items-baseline space-x-3">
+                    <h2 id="total-patrimony" class="text-3xl md:text-4xl font-extrabold tracking-tight">0,00 €</h2>
+                    <span class="text-xs text-emerald-300 font-medium flex items-center"><i class="fa-solid fa-arrow-trend-up mr-1"></i> +2.4% ce mois</span>
+                  </div>
+
+                  <div class="grid grid-cols-3 gap-2 pt-4 border-t border-emerald-700/60 text-xs">
+                    <div>
+                      <p class="text-emerald-200 text-[11px]">Compte Courant</p>
+                      <p id="patrimony-courant" class="font-bold text-white text-sm md:text-base">0,00 €</p>
+                    </div>
+                    <div>
+                      <p class="text-emerald-200 text-[11px]">Épargne & Livrets</p>
+                      <p id="patrimony-epargne" class="font-bold text-white text-sm md:text-base">0,00 €</p>
+                    </div>
+                    <div>
+                      <p class="text-emerald-200 text-[11px]">Portefeuille Bourse</p>
+                      <p id="patrimony-bourse" class="font-bold text-white text-sm md:text-base">12 450,00 €</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. CARTE RÉSUMÉ DES COMPTES ACCÈS RAPIDE -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition">
+                  <div class="space-y-1">
+                    <p class="text-xs font-bold text-caTextMuted uppercase">Compte de Dépôt</p>
+                    <p id="dash-main-balance" class="text-xl font-bold text-caTextDark">0,00 €</p>
+                    <a href="comptes.html" class="text-xs text-caGreen font-semibold hover:underline flex items-center gap-1">Voir détails <i class="fa-solid fa-chevron-right text-[9px]"></i></a>
+                  </div>
+                  <div class="w-10 h-10 rounded-xl bg-emerald-50 text-caGreen flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-wallet"></i>
+                  </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition">
+                  <div class="space-y-1">
+                    <p class="text-xs font-bold text-caTextMuted uppercase">Épargne Disponible</p>
+                    <p id="dash-savings-balance" class="text-xl font-bold text-caGreen">0,00 €</p>
+                    <a href="comptes.html" class="text-xs text-caGreen font-semibold hover:underline flex items-center gap-1">Mes livrets <i class="fa-solid fa-chevron-right text-[9px]"></i></a>
+                  </div>
+                  <div class="w-10 h-10 rounded-xl bg-emerald-50 text-caGreen flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-piggy-bank"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 4. OPÉRATIONS RÉCENTES -->
+              <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <h3 class="font-bold text-caTextDark text-base flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-caGreen"></i>
+                    Dernières opérations
+                  </h3>
+                  <a href="historique.html" class="text-xs font-bold text-caGreen hover:underline">Tout voir</a>
+                </div>
+
+                <div id="dashboard-transactions-list" class="space-y-3">
+                  <div class="p-4 text-center text-gray-400 text-xs">
+                    <i class="fa-solid fa-spinner fa-spin text-lg mb-2 text-caGreen block"></i>
+                    Chargement des opérations...
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- ================= ENCADRÉS DROITE (4 COLONNES) ================= -->
+            <div class="lg:col-span-4 space-y-6">
+
+              <!-- A. BANQUIER PRIVÉ CONTACT -->
+              <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                <div class="flex items-center space-x-3 border-b border-gray-100 pb-3">
+                  <div class="w-12 h-12 rounded-full bg-caActiveBg border-2 border-caGreen flex items-center justify-center text-caGreen font-bold text-lg">
+                    <i class="fa-solid fa-user-tie"></i>
+                  </div>
+                  <div>
+                    <span class="text-[10px] font-bold text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded">Votre Banquier Privé</span>
+                    <h4 class="font-bold text-sm text-caTextDark mt-0.5">Jean-Marc DUPONT</h4>
+                    <p class="text-[11px] text-caTextMuted">Agence Paris Opéra</p>
+                  </div>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                  <a href="tel:+33140141111" class="flex items-center space-x-3 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 text-caTextDark hover:text-caGreen transition">
+                    <i class="fa-solid fa-phone text-caGreen"></i>
+                    <span>+33 (0)1 40 14 11 11</span>
+                  </a>
+                  <a href="messages.html" class="flex items-center space-x-3 p-2.5 rounded-lg bg-gray-50 hover:bg-emerald-50 text-caTextDark hover:text-caGreen transition">
+                    <i class="fa-solid fa-envelope text-caGreen"></i>
+                    <span>Envoyer un message</span>
+                  </a>
+                </div>
+
+                <button onclick="toastr.info('Prise de rendez-vous en ligne bientôt disponible.')" class="w-full bg-caGreen hover:bg-caDarkGreen text-white font-semibold text-xs py-2.5 rounded-xl transition flex items-center justify-center space-x-2">
+                  <i class="fa-regular fa-calendar-check"></i>
+                  <span>Prendre rendez-vous</span>
+                </button>
+              </div>
+
+              <!-- B. ACTUALITÉS & MARCHÉS FINANCIERS -->
+              <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+                <h3 class="font-bold text-caTextDark text-sm border-b border-gray-100 pb-2 flex items-center justify-between">
+                  <span>Marchés & Tendances</span>
+                  <span class="text-[10px] font-normal text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">CAC 40</span>
+                </h3>
+
+                <div class="space-y-3 text-xs">
+                  <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50">
+                    <div>
+                      <p class="font-bold text-caTextDark">CAC 40</p>
+                      <p class="text-[10px] text-caTextMuted">Bourse de Paris</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-bold text-emerald-600">+0.85%</p>
+                      <p class="text-[10px] text-gray-500">7 982.40 pts</p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50">
+                    <div>
+                      <p class="font-bold text-caTextDark">EUR / USD</p>
+                      <p class="text-[10px] text-caTextMuted">Parité devises</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-bold text-red-500">-0.12%</p>
+                      <p class="text-[10px] text-gray-500">1.0845</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pt-2 border-t border-gray-100">
+                  <p class="text-[11px] font-semibold text-caTextDark mb-1">BNP Paribas Wealth Insights</p>
+                  <p class="text-[11px] text-caTextMuted leading-relaxed">Les marchés restent soutenus par les baisses de taux directeurs et les perspectives technologiques...</p>
+                </div>
+              </div>
+
+              <!-- C. SERVICES DIGITAUX & OFFRES -->
+              <div class="bg-emerald-900 text-white rounded-2xl p-6 shadow-sm space-y-3">
+                <div class="flex items-center space-x-2 text-emerald-300 font-bold text-xs">
+                  <i class="fa-solid fa-mobile-screen-button"></i>
+                  <span>Services Digitaux</span>
+                </div>
+                <h4 class="font-bold text-sm">Activez la validation Clé Digitale</h4>
+                <p class="text-xs text-emerald-100 leading-relaxed">Sécurisez vos opérations sensibles et vos virements externes depuis votre mobile.</p>
+                <button onclick="toastr.success('Service Clé Digitale déjà actif sur cet appareil.')" class="w-full bg-white text-caGreen hover:bg-emerald-50 font-bold text-xs py-2 rounded-lg transition">
+                  Gérer mes appareils
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </main>
+  </div>
+
+  <!-- ================= BARRE DE NAVIGATION MOBILE (BOTTOM) ================= -->
+  <nav class="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 mobile-nav-bottom z-40 flex justify-around py-2 text-gray-500 text-[10px]">
+    <a href="dashboard.html" class="flex flex-col items-center text-caGreen font-bold">
+      <i class="fa-solid fa-chart-line text-lg mb-0.5"></i>
+      <span>Accueil</span>
+    </a>
+    <a href="comptes.html" class="flex flex-col items-center hover:text-caGreen">
+      <i class="fa-solid fa-wallet text-lg mb-0.5"></i>
+      <span>Comptes</span>
+    </a>
+    <a href="virement.html" class="flex flex-col items-center hover:text-caGreen">
+      <i class="fa-solid fa-money-bill-transfer text-lg mb-0.5"></i>
+      <span>Virement</span>
+    </a>
+    <a href="messages.html" class="flex flex-col items-center hover:text-caGreen relative">
+      <i class="fa-regular fa-envelope text-lg mb-0.5"></i>
+      <span>Messages</span>
+      <span class="absolute top-0 right-3 w-2 h-2 bg-emerald-600 rounded-full"></span>
+    </a>
+    <a href="profil.html" class="flex flex-col items-center hover:text-caGreen">
+      <i class="fa-regular fa-user text-lg mb-0.5"></i>
+      <span>Profil</span>
+    </a>
+  </nav>
+
+  <!-- ================= SCRIPTS FIREBASE V8 & INTERFACE ================= -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDMBGGXNwEHk4gCwzsofxVYIH0dJ6usyek",
+      authDomain: "alliance-67cb1.firebaseapp.com",
+      projectId: "alliance-67cb1",
+      storageBucket: "alliance-67cb1.firebasestorage.app",
+      messagingSenderId: "464968433664",
+      appId: "1:464968433664:web:0604cbdaf2b36e55e718e5"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+
+    const activeUserId = sessionStorage.getItem('activeUserId');
+    if (!activeUserId) {
+      window.location.href = "index.html";
+    }
+
+    $(function() {
+      db.collection('users').doc(activeUserId).onSnapshot((doc) => {
+        if (doc.exists) {
+          const user = doc.data();
+          const prenom = user.prenom || 'Client';
+          const nom = user.nom || '';
+
+          $('#slide-user-avatar').text(`${prenom[0] || 'C'}${nom[0] || ''}`.toUpperCase());
+          $('#slide-user-name, #nav-user-name, #welcome-user-name').text(prenom + ' ' + nom);
+
+          // Calculations des soldes
+          const soldeCourant = Number(user.solde || user.balance || 0);
+          const soldeEpargne = Number(user.epargne || user.savingsBalance || 2450.00);
+          const soldeBourse = Number(user.bourse || 12450.00);
+          const totalPatrimoine = soldeCourant + soldeEpargne + soldeBourse;
+
+          // Mise à jour de la synthèse
+          $('#dash-main-balance, #patrimony-courant').text(soldeCourant.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
+          $('#dash-savings-balance, #patrimony-epargne').text(soldeEpargne.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
+          $('#patrimony-bourse').text(soldeBourse.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
+          $('#total-patrimony').text(totalPatrimoine.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
+
+          // Chargement des transactions récentes
+          renderRecentTransactions(activeUserId);
+
+        } else {
+          logout();
+        }
+      }, (error) => {
+        console.error("Erreur Firestore :", error);
+      });
+    });
+
+    function renderRecentTransactions(userId) {
+      db.collection('users').doc(userId).collection('transactions').orderBy('date', 'desc').limit(5).get()
+        .then((snapshot) => {
+          const container = $('#dashboard-transactions-list');
+          if (snapshot.empty) {
+            container.html(`
+              <div class="p-4 rounded-xl bg-gray-50 text-center text-xs text-gray-500">
+                <i class="fa-solid fa-receipt text-lg mb-1 block text-gray-300"></i>
+                Aucune transaction récente à afficher.
+              </div>
+            `);
+            return;
+          }
+
+          let html = '';
+          snapshot.forEach((doc) => {
+            const tx = doc.data();
+            const isCredit = tx.type === 'credit' || (tx.montant && Number(tx.montant) > 0);
+            const amountFormatted = Math.abs(Number(tx.montant || 0)).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+            html += `
+              <div class="flex items-center justify-between p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+                <div class="flex items-center space-x-3">
+                  <div class="w-9 h-9 rounded-lg ${isCredit ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'} flex items-center justify-center font-bold text-xs">
+                    <i class="fa-solid ${isCredit ? 'fa-arrow-down-left' : 'fa-arrow-up-right'}"></i>
+                  </div>
+                  <div>
+                    <p class="font-bold text-caTextDark text-xs">${tx.libelle || tx.description || 'Opération Bancaire'}</p>
+                    <p class="text-[10px] text-caTextMuted">${tx.date || 'Récemment'}</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-xs ${isCredit ? 'text-emerald-700' : 'text-caTextDark'}">
+                    ${isCredit ? '+' : '-'}${amountFormatted} €
+                  </p>
+                  <span class="text-[9px] text-gray-400 uppercase font-semibold">Exécuté</span>
+                </div>
+              </div>
+            `;
+          });
+          container.html(html);
+        })
+        .catch((err) => {
+          console.error("Erreur transactions :", err);
+          $('#dashboard-transactions-list').html(`
+            <div class="p-3 text-center text-xs text-red-500">
+              Impossible de charger l'historique des opérations.
+            </div>
+          `);
+        });
+    }
+
+    function toggleMobileMenu() {
+      const menu = $('#mobile-slide-menu');
+      const overlay = $('#mobile-menu-overlay');
+
+      if (menu.hasClass('-translate-x-full')) {
+        menu.removeClass('-translate-x-full').addClass('translate-x-0');
+        overlay.removeClass('hidden');
+        setTimeout(() => overlay.removeClass('opacity-0').addClass('opacity-100'), 10);
+      } else {
+        menu.removeClass('translate-x-0').addClass('-translate-x-full');
+        overlay.removeClass('opacity-100').addClass('opacity-0');
+        setTimeout(() => overlay.addClass('hidden'), 300);
+      }
+    }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
