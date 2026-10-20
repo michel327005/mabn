@@ -126,13 +126,13 @@
           <i class="fa-solid fa-bars"></i>
         </button>
         
-        <div class="flex items-center space-x-2 cursor-pointer" onclick="location.href='dashboard.html'">
-          <img src="https://wp.logos-download.com/wp-content/uploads/2016/04/BNP_Paribas_logo_logotype_emblem.png?dl" height="135" width="165" alt="BNP Paribas Logo" class="brightness-200 invert">
+        <div class="flex items-center space-x-2 cursor-pointer bg-white px-2 py-1 rounded-lg" onclick="location.href='dashboard.html'">
+          <img src="https://wp.logos-download.com/wp-content/uploads/2016/04/BNP_Paribas_logo_logotype_emblem.png?dl" height="35" width="105" alt="BNP Paribas Logo">
         </div>
       </div>
 
       <nav class="hidden md:flex space-x-6 text-sm font-medium">
-        <a href="epargne.html" class="text-white underline decoration-2 underline-offset-4 font-semibold">Tableau de bord</a>
+        <a href="dashboard.html" class="text-white underline decoration-2 underline-offset-4 font-semibold">Tableau de bord</a>
         <a href="comptes.html" class="hover:text-emerald-200 transition">Comptes & Épargne</a>
         <a href="virement.html" class="hover:text-emerald-200 transition">Paiements</a>
         <a href="messages.html" class="hover:text-emerald-200 transition">Messagerie</a>
@@ -206,9 +206,9 @@
       <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
         <div class="max-w-7xl mx-auto space-y-6">
 
-          <!-- BANNIÈRE D'ÉTAT DU COMPTE (GÉRÉ PAR L'ADMIN : ACTIF OU BLOQUÉ) -->
-          <div id="account-status-alert" class="hidden rounded-xl p-4 shadow-sm border items-start gap-3">
-            <!-- Injecté dynamiquement par JS selon le statut -->
+          <!-- BANNIÈRE D'ÉTAT DU COMPTE -->
+          <div id="account-status-alert" class="rounded-xl p-4 shadow-sm border items-start gap-3 flex">
+            <!-- Injecté dynamiquement par JS -->
           </div>
 
           <!-- SALUTATION & BANNIÈRE D'ACCUEIL -->
@@ -217,7 +217,23 @@
               <h1 class="text-2xl md:text-3xl font-extrabold text-caTextDark">
                 Bonjour <span id="welcome-user-name" class="text-caGreen">...</span> 👋
               </h1>
-              <p class="text-xs md:text-sm text-caTextMuted mt-1">Dernière connexion enregistrée : <span id="last-login-date" class="font-medium text-gray-700">Aujourd'hui à 09:41</span></p>
+              <p class="text-xs md:text-sm text-caTextMuted mt-1">Dernière connexion enregistrée : <span id="last-login-date" class="font-medium text-gray-700"><p class="text-xs md:text-sm text-caTextMuted mt-1">
+   <span id="last-login-date" class="font-medium text-gray-700"></span>
+</p>
+
+<script>
+  function updateLastLoginUTC() {
+    const now = new Date();
+    const hours = String(now.getUTCHours()).padStart(2, '0');
+    const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+    
+    document.getElementById('last-login-date').textContent = `Aujourd'hui à ${hours}:${minutes} UTC`;
+  }
+
+  // Mise à jour immédiate puis rafraîchissement chaque minute
+  updateLastLoginUTC();
+  setInterval(updateLastLoginUTC, 60000);
+</script></span></p>
             </div>
             <div class="flex items-center gap-3">
               <button id="btn-nouveau-virement" onclick="verifierEtLancerVirement()" class="bg-caGreen hover:bg-caDarkGreen text-white text-xs md:text-sm font-semibold px-4 py-2.5 rounded-xl transition shadow flex items-center gap-2">
@@ -245,9 +261,8 @@
                 <div class="relative z-10 space-y-4">
                   <div class="flex justify-between items-center">
                     <span class="text-xs uppercase tracking-wider text-emerald-200 font-semibold">Patrimoine Total Estimé</span>
-                    <span id="account-status-badge" class="text-[10px] bg-emerald-800/80 px-2.5 py-1 rounded-full text-emerald-100 font-mono inline-flex items-center gap-1.5">
-                      <i class="fa-solid fa-circle-check"></i>
-                      <span>Compte Actif</span>
+                    <span id="account-status-badge" class="text-[10px] px-2.5 py-1 rounded-full font-mono inline-flex items-center gap-1.5">
+                      <!-- Dynamique -->
                     </span>
                   </div>
 
@@ -267,7 +282,7 @@
                     </div>
                     <div>
                       <p class="text-emerald-200 text-[11px]">Portefeuille Bourse</p>
-                      <p id="patrimony-bourse" class="font-bold text-white text-sm md:text-base">12 450,00 €</p>
+                      <p id="patrimony-bourse" class="font-bold text-white text-sm md:text-base">0,00 €</p>
                     </div>
                   </div>
                 </div>
@@ -388,19 +403,6 @@
                 </div>
               </div>
 
-              <!-- SERVICES DIGITAUX & OFFRES -->
-              <div class="bg-emerald-900 text-white rounded-2xl p-6 shadow-sm space-y-3">
-                <div class="flex items-center space-x-2 text-emerald-300 font-bold text-xs">
-                  <i class="fa-solid fa-mobile-screen-button"></i>
-                  <span>Services Digitaux</span>
-                </div>
-                <h4 class="font-bold text-sm">Activez la validation Clé Digitale</h4>
-                <p class="text-xs text-emerald-100 leading-relaxed">Sécurisez vos opérations sensibles et vos virements externes depuis votre mobile.</p>
-                <button onclick="toastr.success('Service Clé Digitale déjà actif sur cet appareil.')" class="w-full bg-white text-caGreen hover:bg-emerald-50 font-bold text-xs py-2 rounded-lg transition">
-                  Gérer mes appareils
-                </button>
-              </div>
-
             </div>
 
           </div>
@@ -461,53 +463,67 @@
       db.collection('users').doc(activeUserId).onSnapshot((doc) => {
         if (doc.exists) {
           const user = doc.data();
+          
           const prenom = user.prenom || 'Client';
           const nom = user.nom || '';
-
           $('#slide-user-avatar').text(`${prenom[0] || 'C'}${nom[0] || ''}`.toUpperCase());
           $('#slide-user-name, #nav-user-name, #welcome-user-name').text(prenom + ' ' + nom);
 
-          // Statut du Compte ("Compte Actif" ou "Compte Bloqué")
-          const statutCompte = user.statut || user.accountStatus || 'Compte Actif';
-          const motifCommentaire = user.motifBlocage || user.statusMessage || 'Veuillez contacter votre conseiller pour plus d\'informations.';
+          // Gestion robuste et normalisée du Statut et des Notifications
+          const rawStatut = user.statut || user.accountStatus || 'actif';
+          isCompteBloque = (rawStatut === 'bloque' || rawStatut === 'bloqué' || rawStatut === 'Compte Bloqué');
+          
+          const motifCommentaire = user.motifBlocage || user.statusMessage || '';
           
           const alertContainer = $('#account-status-alert');
           const statusBadge = $('#account-status-badge');
 
-          if (statutCompte === 'Compte Bloqué') {
-            isCompteBloque = true;
+          if (isCompteBloque) {
+            const messageBlocage = motifCommentaire || 'Votre compte fait l\'objet d\'une restriction temporaire. Veuillez contacter votre conseiller.';
+            
             statusBadge.html('<i class="fa-solid fa-lock"></i> <span>Compte Bloqué</span>')
                        .removeClass('bg-emerald-800/80 text-emerald-100')
                        .addClass('bg-red-600 text-white font-bold');
             
-            alertContainer.removeClass('hidden').addClass('bg-red-50 border-red-200 flex').html(`
+            alertContainer.removeClass('bg-emerald-50 border-emerald-200')
+                          .addClass('bg-red-50 border-red-200 flex')
+                          .html(`
               <i class="fa-solid fa-lock text-red-600 text-xl mt-0.5"></i>
               <div>
                 <h4 class="text-xs font-bold text-red-900 uppercase tracking-wider">Accès aux opérations restreint</h4>
-                <p class="text-xs text-red-700 mt-0.5">Votre compte est actuellement bloqué. Motif : <span class="font-semibold">${motifCommentaire}</span></p>
+                <p class="text-xs text-red-700 mt-0.5">Notification : <span class="font-semibold">${messageBlocage}</span></p>
               </div>
             `);
           } else {
-            isCompteBloque = false;
+            const messageActif = motifCommentaire || 'Votre compte est actif. Vous pouvez effectuer vos opérations courantes en toute sécurité.';
+            
             statusBadge.html('<i class="fa-solid fa-circle-check"></i> <span>Compte Actif</span>')
-                       .removeClass('bg-red-600 text-white')
+                       .removeClass('bg-red-600 text-white font-bold')
                        .addClass('bg-emerald-800/80 text-emerald-100');
-            alertContainer.addClass('hidden').empty();
+            
+            alertContainer.removeClass('bg-red-50 border-red-200')
+                          .addClass('bg-emerald-50 border-emerald-200 flex')
+                          .html(`
+              <i class="fa-solid fa-shield-halved text-caGreen text-xl mt-0.5"></i>
+              <div>
+                <h4 class="text-xs font-bold text-emerald-900 uppercase tracking-wider">Informations compte</h4>
+                <p class="text-xs text-emerald-700 mt-0.5">Notification : <span class="font-semibold">${messageActif}</span></p>
+              </div>
+            `);
           }
 
-          // Soldes
+          // Gestion des soldes (Livret et Bourse forcés à 0,00 €)
           const soldeCourant = Number(user.solde || user.balance || 0);
-          const soldeEpargne = Number(user.epargne || user.savingsBalance || 2450.00);
-          const soldeBourse = Number(user.bourse || 12450.00);
+          const soldeEpargne = 0;
+          const soldeBourse = 0;
           const totalPatrimoine = soldeCourant + soldeEpargne + soldeBourse;
 
-          // Mise à jour de la synthèse
-          $('#dash-main-balance, #patrimony-courant').text(soldeCourant.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
-          $('#dash-savings-balance, #patrimony-epargne').text(soldeEpargne.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
-          $('#patrimony-bourse').text(soldeBourse.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
-          $('#total-patrimony').text(totalPatrimoine.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
+          const formatOptions = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+          $('#dash-main-balance, #patrimony-courant').text(soldeCourant.toLocaleString('fr-FR', formatOptions) + ' €');
+          $('#dash-savings-balance, #patrimony-epargne').text(soldeEpargne.toLocaleString('fr-FR', formatOptions) + ' €');
+          $('#patrimony-bourse').text(soldeBourse.toLocaleString('fr-FR', formatOptions) + ' €');
+          $('#total-patrimony').text(totalPatrimoine.toLocaleString('fr-FR', formatOptions) + ' €');
 
-          // Rendu des transactions (identique à historique.html)
           const txList = user.transactions || getFallbackTransactions();
           renderDashboardTransactions(txList);
 
@@ -516,12 +532,13 @@
         }
       }, (error) => {
         console.error("Erreur Firestore :", error);
+        toastr.error("Erreur de connexion aux données.");
       });
     });
 
     function verifierEtLancerVirement() {
       if (isCompteBloque) {
-        toastr.error("Opération impossible : Votre compte est actuellement bloqué par l'administration.", "Accès restreint", { timeOut: 5000 });
+        toastr.error("Opération impossible : Votre compte est actuellement bloqué.", "Accès restreint", { timeOut: 5000 });
         return;
       }
       window.location.href = "virement.html";
@@ -540,7 +557,6 @@
         return;
       }
 
-      // On récupère les 5 dernières transactions
       const recent = transactions.slice(0, 5);
       let html = '';
 
@@ -576,10 +592,7 @@
 
     function getFallbackTransactions() {
       return [
-        { date: '14 oct. 2025', label: 'Salaire', category: 'Entreprise', montant: 2000.00 },
-        { date: '12 oct. 2025', label: 'Supermarché Carrefour', category: 'Carte bancaire', montant: -86.45 },
-        { date: '10 oct. 2025', label: 'Virement reçu', category: 'De : Marie Dupont', montant: 120.00 },
-        { date: '08 oct. 2025', label: 'Prélèvement EDF', category: 'Service', montant: -67.32 }
+
       ];
     }
 

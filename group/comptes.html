@@ -329,7 +329,7 @@
 
           // Soldes principaux
           const soldeCourant = Number(user.solde || user.balance || 0);
-          const soldeEpargne = Number(user.epargne || user.savingsBalance || 2450.00);
+          const soldeEpargne = Number(user.epargne || user.savingsBalance || 0.00);
 
           $('#main-balance').text(soldeCourant.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
           $('#savings-balance').text(soldeEpargne.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €');
